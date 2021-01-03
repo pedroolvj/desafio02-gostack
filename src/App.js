@@ -1,30 +1,72 @@
-import React from "react";
+import React, { useEffect, useState} from "react";
+import api from './services/api';
 
 import "./styles.css";
 
 function App() {
+
+  const [projects, setProjects] = useState([]);
+  
+  useEffect(() => {
+    api.get('/repositories').then(response => {
+      setProjects(response.data);
+    })
+  }, []);
+
   async function handleAddRepository() {
-    // TODO
+    const title = document.getElementById('userName');
+    const owner = document.getElementById('userUrl');
+    const response = await api.post('/repositories', {
+      title: title.value,
+      owner: owner.value,
+    });
+
+    const project = response.data;
+
+    setProjects([...projects, project]);
   }
 
   async function handleRemoveRepository(id) {
-    // TODO
+    await api.delete(`/repositories/${id}`);
+
+    const getDeletedResp = projects.findIndex(project => project.id === id);
+
+    const project = projects
+
+    project.splice(getDeletedResp, 1);
+
+    setProjects([...project]);
   }
 
   return (
-    <div>
-      <ul data-testid="repository-list">
-        <li>
-          Repositório 1
+    <div className="container">
+      <div className="ul-container">
+        <ul data-testid="repository-list">
+          {projects.map(project => {
+            return <li key={project.id}> 
+                      <div className="title"> {project.title} </div>
+                      <button onClick={() => handleRemoveRepository(project.id)}>
+                        Remover
+                      </button>
+                    </li>
+          })}
+        </ul>
 
-          <button onClick={() => handleRemoveRepository(1)}>
-            Remover
-          </button>
-        </li>
-      </ul>
-
-      <button onClick={handleAddRepository}>Adicionar</button>
+        
+      </div>
+      <div className="inputs-container">
+        <div className="inputs">
+          <label htmlFor="">User</label>
+          <input type="text" name="" id="userName"/>
+        </div>
+        <div className="inputs">
+          <label htmlFor="">Repositorio</label>
+          <input type="text" name="" id="userUrl"/>
+        </div>
+        <button onClick={handleAddRepository}>Adicionar</button>
+      </div>
     </div>
+
   );
 }
 
